@@ -23,6 +23,7 @@ export class ConfigManager {
     ],
     backupOriginal: false,
     validateSyntax: true,
+    addTitle: true,
   };
 
   /**
@@ -82,6 +83,7 @@ export class ConfigManager {
       ],
       backupOriginal: true,
       validateSyntax: true,
+      addTitle: true,
     };
 
     await fs.writeFile(
@@ -254,6 +256,7 @@ export class ConfigManager {
       imports: config.imports,
       backupOriginal: config.backupOriginal,
       validateSyntax: config.validateSyntax,
+      addTitle: config.addTitle,
     };
 
     await fs.writeFile(

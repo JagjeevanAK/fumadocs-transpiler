@@ -18,6 +18,7 @@ A powerful Node.js transpiler that converts annotated Markdown files to Fuma-doc
 - **Backup Support**: Optional backup of original files
 - **Dry Run**: Preview changes without modifying files
 - **Frontmatter Preservation**: Maintains existing frontmatter in files
+- **Auto Title Generation**: Automatically adds page titles based on filename
 - **Cross-platform**: Works on Windows, macOS, and Linux
 
 ## Installation
@@ -276,6 +277,7 @@ This creates a `fumadocs-transpiler.config.json` file:
 | `imports`           | Array   | Built-in imports  | Import statements to add to files              |
 | `backupOriginal`    | Boolean | `false`           | Create backup files before transformation      |
 | `validateSyntax`    | Boolean | `true`            | Enable syntax validation                       |
+| `addTitle`          | Boolean | `true`            | Automatically add page title based on filename |
 
 ### Custom Components
 
@@ -293,7 +295,7 @@ Add custom component mappings to handle your own annotation types:
 
 Then use them in your Markdown:
 
-```markdown
+````markdown
 :::custom-alert
 This is a custom alert component
 :::
@@ -301,7 +303,32 @@ This is a custom alert component
 :::highlight
 This text will be highlighted
 :::
+
+### Auto Title Generation
+
+The transpiler automatically adds a title at the top of each `.mdx` file based on the filename:
+
+**Examples:**
+
+- `getting-started.md` → `# Getting Started`
+- `api-reference.md` → `# API Reference`
+- `user-guide.md` → `# User Guide`
+- `faq.md` → `# FAQ`
+
+**Title Generation Rules:**
+
+- Hyphens and underscores are converted to spaces
+- Each word is capitalized
+- Common tech acronyms are preserved (API, FAQ, URL, HTML, CSS, etc.)
+
+**Disable Title Generation:**
+
+```json
+{
+  "addTitle": false
+}
 ```
+````
 
 ## CLI Commands
 

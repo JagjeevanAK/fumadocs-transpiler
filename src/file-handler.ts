@@ -68,11 +68,12 @@ export class FileHandler {
     dryRun: boolean = false
   ): Promise<FileProcessingResult> {
     try {
-      // Generate final content with imports and frontmatter
+      // Generate final content with imports, frontmatter, and title
       const finalContent = this.generateFinalContent(
         transformedContent,
         imports,
-        frontmatter
+        frontmatter,
+        inputPath
       );
 
       if (dryRun) {
@@ -218,12 +219,13 @@ export class FileHandler {
   }
 
   /**
-   * Generate final file content with imports and frontmatter
+   * Generate final file content with imports, frontmatter, and title
    */
   private generateFinalContent(
     content: string,
     imports: Set<string>,
-    frontmatter: any
+    frontmatter: any,
+    inputPath: string
   ): string {
     let result = "";
 
@@ -244,10 +246,67 @@ export class FileHandler {
       result += Array.from(imports).join("\n") + "\n\n";
     }
 
+    // Add title based on filename (if enabled in config and content doesn't start with a title)
+    if (this.config.addTitle !== false) {
+      const title = this.generateTitleFromFilename(inputPath);
+      if (title && !this.contentStartsWithTitle(content)) {
+        result += `# ${title}\n\n`;
+      }
+    }
+
     // Add transformed content
     result += content;
 
     return result;
+  }
+
+  /**
+   * Check if content already starts with a title (# heading)
+   */
+  private contentStartsWithTitle(content: string): boolean {
+    const trimmedContent = content.trim();
+    return (
+      trimmedContent.startsWith("# ") ||
+      /^#\s+.+$/m.test(trimmedContent.split("\n")[0])
+    );
+  }
+
+  /**
+   * Generate title from filename
+   */
+  private generateTitleFromFilename(filePath: string): string {
+    const basename = path.basename(filePath, path.extname(filePath));
+
+    // Convert filename to title format
+    return (
+      basename
+        // Replace hyphens and underscores with spaces
+        .replace(/[-_]/g, " ")
+        // Capitalize first letter of each word
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+        // Handle special cases like "API" or "FAQ"
+        .replace(/\bApi\b/g, "API")
+        .replace(/\bFaq\b/g, "FAQ")
+        .replace(/\bUrl\b/g, "URL")
+        .replace(/\bHtml\b/g, "HTML")
+        .replace(/\bCss\b/g, "CSS")
+        .replace(/\bJs\b/g, "JS")
+        .replace(/\bJson\b/g, "JSON")
+        .replace(/\bXml\b/g, "XML")
+        .replace(/\bSql\b/g, "SQL")
+        .replace(/\bUi\b/g, "UI")
+        .replace(/\bUx\b/g, "UX")
+        .replace(/\bCli\b/g, "CLI")
+        .replace(/\bSdk\b/g, "SDK")
+        .replace(/\bRest\b/g, "REST")
+        .replace(/\bGraphql\b/g, "GraphQL")
+        .replace(/\bOauth\b/g, "OAuth")
+        .replace(/\bJwt\b/g, "JWT")
+        .replace(/\bCrud\b/g, "CRUD")
+        .replace(/\bMvc\b/g, "MVC")
+        .replace(/\bMvp\b/g, "MVP")
+        .replace(/\bMvvm\b/g, "MVVM")
+    );
   }
 
   /**

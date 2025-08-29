@@ -99,6 +99,7 @@ describe("ConfigManager", () => {
         imports: ['import { Test } from "./test";'],
         backupOriginal: false,
         validateSyntax: true,
+        addTitle: true,
       };
 
       const errors = ConfigManager.validateConfig(config);
@@ -122,6 +123,7 @@ describe("ConfigManager", () => {
         imports: [],
         backupOriginal: false,
         validateSyntax: true,
+        addTitle: true,
       };
 
       const errors = ConfigManager.validateConfig(config);
@@ -141,6 +143,7 @@ describe("ConfigManager", () => {
         imports: [],
         backupOriginal: false,
         validateSyntax: true,
+        addTitle: true,
       };
 
       const errors = ConfigManager.validateConfig(config);
@@ -162,6 +165,7 @@ describe("ConfigManager", () => {
         ],
         backupOriginal: false,
         validateSyntax: true,
+        addTitle: true,
       };
 
       const errors = ConfigManager.validateConfig(config);
@@ -228,6 +232,7 @@ describe("ConfigManager", () => {
         imports: [],
         backupOriginal: false,
         validateSyntax: true,
+        addTitle: true,
       };
 
       const types = ConfigManager.getSupportedTypes(config);
@@ -256,6 +261,7 @@ describe("ConfigManager", () => {
         imports: [],
         backupOriginal: false,
         validateSyntax: true,
+        addTitle: true,
       };
     });
 

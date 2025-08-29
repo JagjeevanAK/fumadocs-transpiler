@@ -5,6 +5,7 @@ export interface TranspilerConfig {
   imports: string[];
   backupOriginal?: boolean;
   validateSyntax?: boolean;
+  addTitle?: boolean;
 }
 
 export interface CliOptions {
