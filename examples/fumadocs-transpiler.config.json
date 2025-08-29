@@ -1,0 +1,23 @@
+{
+  "componentMappings": {
+    "callout-info": "<Callout type=\"info\">{{content}}</Callout>",
+    "callout-warn": "<Callout type=\"warn\">{{content}}</Callout>",
+    "callout-error": "<Callout type=\"error\">{{content}}</Callout>",
+    "callout-note": "<Callout type=\"note\">{{content}}</Callout>",
+    "custom-tip": "<div className=\"bg-blue-50 border-l-4 border-blue-400 p-4 my-4\"><div className=\"flex\"><div className=\"ml-3\"><p className=\"text-sm text-blue-700\">{{content}}</p></div></div></div>",
+    "highlight": "<mark className=\"bg-yellow-200 px-1 rounded\">{{content}}</mark>"
+  },
+  "preserveOriginal": false,
+  "outputExtension": ".mdx",
+  "imports": [
+    "import { Callout } from 'fumadocs-ui/components/callout';",
+    "import { Tabs, Tab } from 'fumadocs-ui/components/tabs';",
+    "import { Steps, Step } from 'fumadocs-ui/components/steps';",
+    "import { Accordions, Accordion } from 'fumadocs-ui/components/accordion';",
+    "import { CodeBlock } from 'fumadocs-ui/components/codeblock';",
+    "import { Files, File } from 'fumadocs-ui/components/files';",
+    "import { Banner } from 'fumadocs-ui/components/banner';"
+  ],
+  "backupOriginal": true,
+  "validateSyntax": true
+}
