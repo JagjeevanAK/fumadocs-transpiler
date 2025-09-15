@@ -19,22 +19,27 @@ program
 
 // Main transpile command
 program
-  .argument("<input>", "Input directory or file path")
-  .argument(
-    "[output]",
-    "Output directory (optional, defaults to in-place transformation)"
-  )
+  .option("-i, --input <path>", "Input directory or file path (required)")
+  .option("-o, --output <path>", "Output directory (optional, defaults to input location)")
+  .option("--description <text>", "Description to add to frontmatter")
   .option("-w, --watch", "Watch for file changes and auto-transpile")
   .option("-c, --config <path>", "Path to configuration file")
   .option("-d, --dry-run", "Preview changes without writing files")
   .option("-b, --backup", "Create backup of original files")
   .option("-v, --verbose", "Enable verbose output")
   .option("--validate-only", "Only validate files without transpiling")
-  .action(async (input: string, output: string | undefined, options: any) => {
+  .action(async (options: { input?: string; output?: string; description?: string; watch?: boolean; config?: string; dryRun?: boolean; backup?: boolean; verbose?: boolean; validateOnly?: boolean }) => {
     try {
+      // Check if input is provided
+      if (!options.input) {
+        console.error(chalk.red("❌ Input path is required. Use --input or -i flag."));
+        console.log(chalk.yellow("Example: fumadocs-transpiler --input ./docs"));
+        process.exit(1);
+      }
+
       // Resolve input path
-      const inputPath = path.resolve(input);
-      const outputPath = output ? path.resolve(output) : undefined;
+      const inputPath = path.resolve(options.input);
+      const outputPath = options.output ? path.resolve(options.output) : undefined;
 
       // Check if input exists
       if (!(await fs.pathExists(inputPath))) {
@@ -61,6 +66,7 @@ program
       const cliOptions: CliOptions = {
         input: inputPath,
         output: outputPath,
+        description: options.description,
         watch: options.watch,
         config: configPath,
         dryRun: options.dryRun,
@@ -99,9 +105,9 @@ configCmd
     "Output path for config file",
     "fumadocs-transpiler.config.json"
   )
-  .action(async (options) => {
+  .action(async (options: { output?: string }) => {
     try {
-      const outputPath = path.resolve(options.output);
+      const outputPath = path.resolve(options.output || "fumadocs-transpiler.config.json");
 
       if (await fs.pathExists(outputPath)) {
         console.error(
@@ -160,7 +166,7 @@ program
   .command("info")
   .description("Show transpiler information and supported annotation types")
   .option("-c, --config <path>", "Path to configuration file")
-  .action(async (options) => {
+  .action(async (options: { config?: string }) => {
     try {
       let configPath = options.config;
       if (!configPath) {
@@ -200,23 +206,29 @@ program
   .action(() => {
     console.log(chalk.blue("📚 Usage Examples\n"));
 
-    console.log(chalk.yellow("Basic usage:"));
-    console.log("  fumadocs-transpiler ./docs ./src/pages\n");
+    console.log(chalk.yellow("Basic usage with output directory:"));
+    console.log("  fumadocs-transpiler --input ./docs --output ./src/pages\n");
 
-    console.log(chalk.yellow("In-place transformation:"));
-    console.log("  fumadocs-transpiler ./docs\n");
+    console.log(chalk.yellow("In-place transformation (default):"));
+    console.log("  fumadocs-transpiler --input ./docs\n");
+
+    console.log(chalk.yellow("Short flags:"));
+    console.log("  fumadocs-transpiler -i ./docs -o ./src/pages\n");
 
     console.log(chalk.yellow("Watch mode:"));
-    console.log("  fumadocs-transpiler ./docs --watch\n");
+    console.log("  fumadocs-transpiler --input ./docs --watch\n");
 
     console.log(chalk.yellow("Dry run (preview changes):"));
-    console.log("  fumadocs-transpiler ./docs --dry-run\n");
+    console.log("  fumadocs-transpiler --input ./docs --dry-run\n");
+
+    console.log(chalk.yellow("With description:"));
+    console.log('  fumadocs-transpiler --input ./docs --description "API documentation"\n');
 
     console.log(chalk.yellow("With custom config:"));
-    console.log("  fumadocs-transpiler ./docs --config ./my-config.json\n");
+    console.log("  fumadocs-transpiler --input ./docs --config ./my-config.json\n");
 
     console.log(chalk.yellow("Validate only:"));
-    console.log("  fumadocs-transpiler ./docs --validate-only\n");
+    console.log("  fumadocs-transpiler --input ./docs --validate-only\n");
 
     console.log(chalk.yellow("Create config file:"));
     console.log("  fumadocs-transpiler config init\n");

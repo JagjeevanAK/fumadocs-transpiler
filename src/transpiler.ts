@@ -153,7 +153,8 @@ export class FumadocsTranspiler {
         transformedContent,
         imports,
         frontmatter,
-        options.dryRun
+        options.dryRun,
+        options.description
       );
 
       // Combine all errors

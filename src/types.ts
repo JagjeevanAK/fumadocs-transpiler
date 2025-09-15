@@ -11,6 +11,7 @@ export interface TranspilerConfig {
 export interface CliOptions {
   input: string;
   output?: string;
+  description?: string;
   watch?: boolean;
   config?: string;
   dryRun?: boolean;

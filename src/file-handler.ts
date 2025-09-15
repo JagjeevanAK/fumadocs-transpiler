@@ -65,7 +65,8 @@ export class FileHandler {
     transformedContent: string,
     imports: Set<string>,
     frontmatter: any,
-    dryRun: boolean = false
+    dryRun: boolean = false,
+    description?: string
   ): Promise<FileProcessingResult> {
     try {
       // Generate final content with imports, frontmatter, and title
@@ -73,7 +74,8 @@ export class FileHandler {
         transformedContent,
         imports,
         frontmatter,
-        inputPath
+        inputPath,
+        description
       );
 
       if (dryRun) {
@@ -138,7 +140,19 @@ export class FileHandler {
     }
 
     // Transform to output directory
-    const relativePath = path.relative(inputDir, inputPath);
+    // Handle case where inputDir is a file path instead of directory
+    let actualInputDir = inputDir;
+    try {
+      const stats = fs.statSync(inputDir);
+      if (stats.isFile()) {
+        actualInputDir = path.dirname(inputDir);
+      }
+    } catch {
+      // If we can't stat inputDir, assume it's a directory
+      actualInputDir = inputDir;
+    }
+    
+    const relativePath = path.relative(actualInputDir, inputPath);
     const dir = path.dirname(relativePath);
     const name = path.basename(relativePath, ".md");
     return path.join(outputDir, dir, `${name}${this.config.outputExtension}`);
@@ -219,24 +233,82 @@ export class FileHandler {
   }
 
   /**
+   * Extract title from markdown content (first # heading)
+   */
+  public extractTitleFromContent(content: string): string | null {
+    const lines = content.split('\n');
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith('# ')) {
+        // Extract title and remove the # and any extra whitespace
+        return trimmedLine.substring(2).trim();
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Remove title from content if it exists at the beginning
+   */
+  public removeTitleFromContent(content: string): string {
+    const lines = content.split('\n');
+    let startIndex = 0;
+    
+    // Find the first non-empty line
+    for (let i = 0; i < lines.length; i++) {
+      const trimmedLine = lines[i].trim();
+      if (trimmedLine) {
+        if (trimmedLine.startsWith('# ')) {
+          // Skip the title line and any following empty lines
+          startIndex = i + 1;
+          while (startIndex < lines.length && !lines[startIndex].trim()) {
+            startIndex++;
+          }
+        }
+        break;
+      }
+    }
+    
+    return lines.slice(startIndex).join('\n');
+  }
+
+  /**
    * Generate final file content with imports, frontmatter, and title
    */
   private generateFinalContent(
     content: string,
     imports: Set<string>,
     frontmatter: any,
-    inputPath: string
+    inputPath: string,
+    description?: string
   ): string {
     let result = "";
 
-    // Add frontmatter if it exists
-    if (frontmatter && Object.keys(frontmatter).length > 0) {
+    // Extract title from content
+    const extractedTitle = this.extractTitleFromContent(content);
+    
+    // Remove title from content if it exists
+    const contentWithoutTitle = extractedTitle ? this.removeTitleFromContent(content) : content;
+
+    // Create enhanced frontmatter with title and description
+    const enhancedFrontmatter = { ...frontmatter };
+    
+    if (extractedTitle) {
+      enhancedFrontmatter.title = extractedTitle;
+    }
+    
+    if (description) {
+      enhancedFrontmatter.description = description;
+    }
+
+    // Add frontmatter (always add if we have title or description)
+    if (Object.keys(enhancedFrontmatter).length > 0) {
       result += "---\n";
-      result += Object.entries(frontmatter)
-        .map(
-          ([key, value]) =>
-            `${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`
-        )
+      result += Object.entries(enhancedFrontmatter)
+        .map(([key, value]) => {
+          const formattedValue = typeof value === "string" ? `"${value}"` : JSON.stringify(value);
+          return `${key}: ${formattedValue}`;
+        })
         .join("\n");
       result += "\n---\n\n";
     }
@@ -246,16 +318,8 @@ export class FileHandler {
       result += Array.from(imports).join("\n") + "\n\n";
     }
 
-    // Add title based on filename (if enabled in config and content doesn't start with a title)
-    if (this.config.addTitle !== false) {
-      const title = this.generateTitleFromFilename(inputPath);
-      if (title && !this.contentStartsWithTitle(content)) {
-        result += `# ${title}\n\n`;
-      }
-    }
-
-    // Add transformed content
-    result += content;
+    // Add transformed content (without the original title since it's now in frontmatter)
+    result += contentWithoutTitle;
 
     return result;
   }
