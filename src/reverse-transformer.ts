@@ -124,7 +124,7 @@ export class ReverseTransformer {
     
     return content.replace(calloutRegex, (match, type, innerContent) => {
       const cleanContent = innerContent.trim();
-      return `:::callout-${type}\n${cleanContent}\n:::`;
+      return `::: callout-${type}\n${cleanContent}\n:::`;
     });
   }
 
@@ -150,7 +150,7 @@ export class ReverseTransformer {
         }
         
         // Build annotation format
-        let result = ':::tabs\n';
+        let result = '::: tabs\n';
         for (const item of items) {
           if (tabs[item]) {
             result += `${item}|${tabs[item]}\n`;
@@ -186,7 +186,7 @@ export class ReverseTransformer {
       }
       
       if (steps.length > 0) {
-        return `:::steps\n${steps.join('\n')}\n:::`;
+        return `::: steps\n${steps.join('\n')}\n:::`;
       }
       
       return match;
@@ -213,7 +213,7 @@ export class ReverseTransformer {
       }
       
       if (accordions.length > 0) {
-        return `:::accordion\n${accordions.join('\n')}\n:::`;
+        return `::: accordion\n${accordions.join('\n')}\n:::`;
       }
       
       return match;
@@ -240,7 +240,7 @@ export class ReverseTransformer {
         return `\`\`\`${lang}\n${code}\n\`\`\``;
       } else {
         // Convert to annotation format (these were originally :::code-block annotations)
-        let result = `:::code-block lang="${lang}"`;
+        let result = `::: code-block lang="${lang}"`;
         if (title) {
           result += ` title="${title}"`;
         }
@@ -277,7 +277,7 @@ export class ReverseTransformer {
     
     return content.replace(filesRegex, (match, filesContent) => {
       const fileStructure = this.parseFileStructure(filesContent, 0);
-      return `:::files\n${fileStructure}\n:::`;
+      return `::: files\n${fileStructure}\n:::`;
     });
   }
 
@@ -319,7 +319,7 @@ export class ReverseTransformer {
     
     return content.replace(bannerRegex, (match, type, innerContent) => {
       const cleanContent = innerContent.trim();
-      return `:::banner type="${type}"\n${cleanContent}\n:::`;
+      return `::: banner type="${type}"\n${cleanContent}\n:::`;
     });
   }
 }

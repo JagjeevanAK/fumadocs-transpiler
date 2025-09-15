@@ -1,7 +1,7 @@
 import { AnnotationBlock, TransformError } from "./types";
 
 export class AnnotationParser {
-  private static readonly ANNOTATION_REGEX = /^:::([a-zA-Z-]+)(?:\s+(.+?))?$/;
+  private static readonly ANNOTATION_REGEX = /^:::\s+([a-zA-Z-]+)(?:\s+(.+?))?$/;
   private static readonly CLOSING_REGEX = /^:::$/;
 
   /**

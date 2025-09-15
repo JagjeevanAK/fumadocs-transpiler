@@ -82,7 +82,7 @@ fumadocs-transpiler --input ./docs --watch
 
 Regular annotations still work alongside enhanced code blocks:
 
-:::callout-info
+::: callout-info
 This is an informational callout that will be converted to a React component.
 :::
 

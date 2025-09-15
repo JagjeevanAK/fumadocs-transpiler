@@ -52,7 +52,7 @@ Is it open source?|Yes, it's available on GitHub under the MIT license with full
 
 ### JavaScript Example
 
-::: code-block lang="javascript" title="Basic Usage"
+```js 
 import { FumadocsTranspiler } from 'fumadocs-transpiler';
 
 const transpiler = await FumadocsTranspiler.create();
@@ -61,17 +61,17 @@ await transpiler.processFiles({
   output: './src/pages',
   description: 'API documentation'
 });
-:::
+```
 
 ### Bash Commands
 
-:::code-block lang="bash" title="CLI Commands"
+```sh
 # Forward transpilation
 fumadocs-transpiler --input ./docs --output ./src/pages
 
 # Reverse transpilation
 fumadocs-transpiler --input ./src/pages --output ./docs --reverse
-:::
+```
 
 ## File Structure
 

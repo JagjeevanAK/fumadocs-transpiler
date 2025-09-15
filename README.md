@@ -271,11 +271,11 @@ npm install package
 ```markdown
 # Getting Started
 
-:::callout-info
+::: callout-info
 This is helpful information for users.
 :::
 
-:::tabs
+::: tabs
 npm|npm install package
 yarn|yarn add package
 pnpm|pnpm add package
@@ -316,22 +316,24 @@ fumadocs-transpiler --input ./src/pages --reverse --watch
 
 ## Annotation Syntax
 
+All annotations use the format `::: trigger` (with a space between the triple colons and the trigger word).
+
 ### Callouts
 
 ```markdown
-:::callout-info
+::: callout-info
 This is an info callout message
 :::
 
-:::callout-warn
+::: callout-warn
 This is a warning message
 :::
 
-:::callout-error
+::: callout-error
 This is an error message
 :::
 
-:::callout-note
+::: callout-note
 This is a note message
 :::
 ```
@@ -345,7 +347,7 @@ This is a note message
 ### Tabs
 
 ```markdown
-:::tabs
+::: tabs
 Tab 1|Content for the first tab
 Tab 2|Content for the second tab
 Tab 3|Content for the third tab
@@ -365,7 +367,7 @@ Tab 3|Content for the third tab
 ### Steps
 
 ```markdown
-:::steps
+::: steps
 Step 1: Install the package
 Step 2: Configure your project
 Step 3: Start using the transpiler
@@ -385,7 +387,7 @@ Step 3: Start using the transpiler
 ### Accordion
 
 ```markdown
-:::accordion
+::: accordion
 How do I install?|Run npm install fumadocs-transpiler
 How do I configure?|Create a config file using fumadocs-transpiler config init
 :::
@@ -407,7 +409,7 @@ How do I configure?|Create a config file using fumadocs-transpiler config init
 ### Code Blocks
 
 ```markdown
-:::code-block lang="javascript" title="Example Code"
+::: code-block lang="javascript" title="Example Code"
 console.log('Hello, World!');
 const message = 'This is a code example';
 :::
@@ -428,7 +430,7 @@ const message = 'This is a code example';
 ### File Tree
 
 ```markdown
-:::files
+::: files
 src/
 components/
 Button.tsx
@@ -464,7 +466,7 @@ helpers.ts
 ### Banner
 
 ```markdown
-:::banner type="info"
+::: banner type="info"
 This is an important announcement banner
 :::
 ```
