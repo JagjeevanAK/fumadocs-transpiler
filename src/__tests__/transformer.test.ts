@@ -349,4 +349,88 @@ Some content
       expect(result.errors[0].message).toContain("unknown-type");
     });
   });
+
+  describe("Code Block Title Extraction", () => {
+    it("should add title from nearest ## heading to code blocks", () => {
+      const content = `# Main Title
+
+## js example
+
+\`\`\`js
+const a = 1;
+console.log(a);
+\`\`\`
+
+### Another heading
+
+\`\`\`python
+def hello():
+    print("world")
+\`\`\``;
+
+      const result = transformer.transformAnnotations(content, []);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.content).toContain('```js title="js example"');
+      expect(result.content).toContain('```python title="Another heading"');
+    });
+
+    it("should add title from nearest ### heading to code blocks", () => {
+      const content = `# Main Title
+
+## Section
+
+### Configuration
+
+\`\`\`json
+{
+  "name": "test"
+}
+\`\`\``;
+
+      const result = transformer.transformAnnotations(content, []);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.content).toContain('```json title="Configuration"');
+    });
+
+    it("should handle code blocks without nearby headings", () => {
+      const content = `# Main Title
+
+Some text here.
+
+\`\`\`bash
+npm install
+\`\`\``;
+
+      const result = transformer.transformAnnotations(content, []);
+
+      expect(result.errors).toHaveLength(0);
+      // Should not add title if no ## or ### heading is found
+      expect(result.content).toContain('```bash\n');
+      expect(result.content).not.toContain('title=');
+    });
+
+    it("should stop at # heading and not use it as title", () => {
+      const content = `# Main Title
+
+\`\`\`js
+console.log("test");
+\`\`\`
+
+## Section
+
+\`\`\`python
+print("hello")
+\`\`\``;
+
+      const result = transformer.transformAnnotations(content, []);
+
+      expect(result.errors).toHaveLength(0);
+      // First code block should not have title (only # heading above)
+      expect(result.content).toMatch(/```js\s*\nconsole\.log/);
+      // Second code block should have title from ## heading
+      expect(result.content).toContain('```python title="Section"');
+    });
+  });
 });

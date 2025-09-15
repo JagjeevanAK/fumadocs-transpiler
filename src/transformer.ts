@@ -316,7 +316,7 @@ export class AnnotationTransformer {
   }
 
   /**
-   * Transform regular markdown code blocks to CodeBlock components
+   * Transform regular markdown code blocks to add title attributes
    */
   private transformMarkdownCodeBlocks(content: string): string {
     const lines = content.split('\n');
@@ -327,11 +327,10 @@ export class AnnotationTransformer {
       const line = lines[i];
       
       // Check if this line starts a code block
-      const codeBlockMatch = line.match(/^```(\w+)?\s*(.*)$/);
+      const codeBlockMatch = line.match(/^```(\w+)?\s*$/);
       
       if (codeBlockMatch) {
         const lang = codeBlockMatch[1] || '';
-        const titleFromLine = codeBlockMatch[2].trim();
         
         // Find the end of the code block
         let endIndex = i + 1;
@@ -344,7 +343,7 @@ export class AnnotationTransformer {
           const codeContent = lines.slice(i + 1, endIndex).join('\n');
           
           // Find the nearest heading above this code block
-          const title = titleFromLine || this.findNearestHeading(lines, i);
+          const title = this.findNearestHeading(lines, i);
           
           // Create enhanced markdown code block with title
           let enhancedCodeBlock = `\`\`\`${lang}`;
