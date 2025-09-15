@@ -28,6 +28,9 @@ export class AnnotationTransformer {
     let transformedContent = content;
     this.usedImports.clear();
 
+    // First, transform regular markdown code blocks
+    transformedContent = this.transformMarkdownCodeBlocks(transformedContent);
+
     // Sort blocks by start line in reverse order to avoid offset issues
     const sortedBlocks = [...blocks].sort((a, b) => b.startLine - a.startLine);
 
@@ -310,5 +313,82 @@ export class AnnotationTransformer {
     const afterLines = lines.slice(block.endLine);
 
     return [...beforeLines, replacement, ...afterLines].join("\n");
+  }
+
+  /**
+   * Transform regular markdown code blocks to CodeBlock components
+   */
+  private transformMarkdownCodeBlocks(content: string): string {
+    const lines = content.split('\n');
+    const resultLines: string[] = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      
+      // Check if this line starts a code block
+      const codeBlockMatch = line.match(/^```(\w+)?\s*(.*)$/);
+      
+      if (codeBlockMatch) {
+        const lang = codeBlockMatch[1] || '';
+        const titleFromLine = codeBlockMatch[2].trim();
+        
+        // Find the end of the code block
+        let endIndex = i + 1;
+        while (endIndex < lines.length && lines[endIndex].trim() !== '```') {
+          endIndex++;
+        }
+        
+        if (endIndex < lines.length) {
+          // Extract code content
+          const codeContent = lines.slice(i + 1, endIndex).join('\n');
+          
+          // Find the nearest heading above this code block
+          const title = titleFromLine || this.findNearestHeading(lines, i);
+          
+          // Create enhanced markdown code block with title
+          let enhancedCodeBlock = `\`\`\`${lang}`;
+          if (title) {
+            enhancedCodeBlock += ` title="${title}"`;
+          }
+          enhancedCodeBlock += `\n${codeContent}\n\`\`\``;
+          
+          resultLines.push(enhancedCodeBlock);
+          i = endIndex + 1; // Skip to after the closing ```
+        } else {
+          // Malformed code block, keep as is
+          resultLines.push(line);
+          i++;
+        }
+      } else {
+        resultLines.push(line);
+        i++;
+      }
+    }
+
+    return resultLines.join('\n');
+  }
+
+  /**
+   * Find the nearest heading (## or ###) above the given line
+   */
+  private findNearestHeading(lines: string[], currentIndex: number): string | null {
+    // Look backwards from the current line
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      const line = lines[i].trim();
+      
+      // Check for ## or ### headings
+      const headingMatch = line.match(/^(#{2,3})\s+(.+)$/);
+      if (headingMatch) {
+        return headingMatch[2].trim();
+      }
+      
+      // Stop if we hit a # heading (main title) as we don't want to go that far up
+      if (line.match(/^#\s+/)) {
+        break;
+      }
+    }
+    
+    return null;
   }
 }

@@ -18,6 +18,9 @@ export class ReverseTransformer {
       // Remove imports
       transformedContent = this.removeImports(transformedContent);
 
+      // Remove title attributes from regular markdown code blocks
+      transformedContent = this.removeCodeBlockTitles(transformedContent);
+
       // Convert components back to annotations
       transformedContent = this.convertComponentsToAnnotations(transformedContent);
 
@@ -72,6 +75,14 @@ export class ReverseTransformer {
     }
 
     return filteredLines.join('\n');
+  }
+
+  /**
+   * Remove title attributes from regular markdown code blocks
+   */
+  private removeCodeBlockTitles(content: string): string {
+    // Match ```lang title="title" and convert back to ```lang
+    return content.replace(/```(\w+)\s+title="[^"]*"/g, '```$1');
   }
 
   /**
@@ -210,7 +221,7 @@ export class ReverseTransformer {
   }
 
   /**
-   * Convert CodeBlock components back to annotations
+   * Convert CodeBlock components back to regular markdown code blocks or annotations
    */
   private convertCodeBlocks(content: string): string {
     // Match <CodeBlock lang="..." title="...">```lang\ncode\n```</CodeBlock>
@@ -218,17 +229,43 @@ export class ReverseTransformer {
     
     return content.replace(codeBlockRegex, (match, lang, title, codeContent) => {
       // Extract code from markdown code block
-      const codeMatch = codeContent.match(/```[^`]*\n([\s\S]*?)```/);
-      const code = codeMatch ? codeMatch[1].trim() : codeContent.trim();
+      const codeMatch = codeContent.match(/```[^`]*\n([\s\S]*?)\n```/);
+      const code = codeMatch ? codeMatch[1] : codeContent.trim();
       
-      let result = `:::code-block lang="${lang}"`;
-      if (title) {
-        result += ` title="${title}"`;
+      // For CodeBlocks that were created from regular markdown code blocks,
+      // convert back to regular markdown code blocks
+      // We can distinguish them by checking if they have titles that look like headings
+      if (title && this.looksLikeHeadingTitle(title)) {
+        // Convert back to regular markdown code block
+        return `\`\`\`${lang}\n${code}\n\`\`\``;
+      } else {
+        // Convert to annotation format (these were originally :::code-block annotations)
+        let result = `:::code-block lang="${lang}"`;
+        if (title) {
+          result += ` title="${title}"`;
+        }
+        result += `\n${code}\n:::`;
+        return result;
       }
-      result += `\n${code}\n:::`;
-      
-      return result;
     });
+  }
+
+  /**
+   * Check if a title looks like it was extracted from a heading
+   */
+  private looksLikeHeadingTitle(title: string): boolean {
+    // Simple heuristics to determine if this was likely extracted from a heading
+    // vs being an explicit title in a :::code-block annotation
+    
+    // If it contains common heading words or patterns, likely from a heading
+    const headingPatterns = [
+      /^(Getting Started|Installation|Usage|Example|Setup|Configuration|API|Tutorial|Guide)/i,
+      /^(Step \d+|Chapter \d+|Section \d+)/i,
+      /^[A-Z][a-z]+ [A-Z][a-z]+/, // Title Case words
+      /^[A-Z][a-z]+ (Example|Usage|Guide|Tutorial|Setup|Installation)$/i
+    ];
+    
+    return headingPatterns.some(pattern => pattern.test(title));
   }
 
   /**
