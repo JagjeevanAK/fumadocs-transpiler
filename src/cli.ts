@@ -31,39 +31,33 @@ program
   .option("--validate-only", "Only validate files without transpiling")
   .action(async (options: { input?: string; output?: string; description?: string; reverse?: boolean; watch?: boolean; config?: string; dryRun?: boolean; backup?: boolean; verbose?: boolean; validateOnly?: boolean }) => {
     try {
-      // Check if input is provided
       if (!options.input) {
-        console.error(chalk.red("❌ Input path is required. Use --input or -i flag."));
+        console.error(chalk.red("Input path is required. Use --input or -i flag."));
         console.log(chalk.yellow("Example: fumadocs-transpiler --input ./docs"));
         process.exit(1);
       }
 
-      // Resolve input path
       const inputPath = path.resolve(options.input);
       const outputPath = options.output ? path.resolve(options.output) : undefined;
 
-      // Check if input exists
       if (!(await fs.pathExists(inputPath))) {
-        console.error(chalk.red(`❌ Input path does not exist: ${inputPath}`));
+        console.error(chalk.red(`Input path does not exist: ${inputPath}`));
         process.exit(1);
       }
 
-      // Find or use config file
       let configPath = options.config;
       if (!configPath) {
         const foundConfig = await ConfigManager.findConfigFile(process.cwd());
         if (foundConfig) {
           configPath = foundConfig;
           if (options.verbose) {
-            console.log(chalk.blue(`📄 Using config file: ${configPath}`));
+            console.log(chalk.blue(`Using config file: ${configPath}`));
           }
         }
       }
 
-      // Create transpiler instance
       const transpiler = await FumadocsTranspiler.create(configPath);
 
-      // Prepare CLI options
       const cliOptions: CliOptions = {
         input: inputPath,
         output: outputPath,
@@ -76,7 +70,6 @@ program
         verbose: options.verbose,
       };
 
-      // Handle different modes
       if (options.validateOnly) {
         const isValid = await transpiler.validateFiles(cliOptions);
         process.exit(isValid ? 0 : 1);
@@ -87,7 +80,7 @@ program
       }
     } catch (error) {
       console.error(
-        chalk.red("💥 Error:"),
+        chalk.red("Error:"),
         error instanceof Error ? error.message : "Unknown error"
       );
       process.exit(1);
@@ -113,16 +106,16 @@ configCmd
 
       if (await fs.pathExists(outputPath)) {
         console.error(
-          chalk.red(`❌ Config file already exists: ${outputPath}`)
+          chalk.red(`Config file already exists: ${outputPath}`)
         );
         process.exit(1);
       }
 
       await ConfigManager.createDefaultConfig(outputPath);
-      console.log(chalk.green(`✅ Created config file: ${outputPath}`));
+      console.log(chalk.green(`Created config file: ${outputPath}`));
     } catch (error) {
       console.error(
-        chalk.red("💥 Error creating config:"),
+        chalk.red("Error creating config:"),
         error instanceof Error ? error.message : "Unknown error"
       );
       process.exit(1);
@@ -138,7 +131,7 @@ configCmd
       if (!configPath) {
         const foundConfig = await ConfigManager.findConfigFile(process.cwd());
         if (!foundConfig) {
-          console.error(chalk.red("❌ No configuration file found"));
+          console.error(chalk.red("No configuration file found"));
           process.exit(1);
         }
         configPath = foundConfig;
@@ -148,15 +141,15 @@ configCmd
       const errors = ConfigManager.validateConfig(config);
 
       if (errors.length === 0) {
-        console.log(chalk.green("✅ Configuration is valid"));
+        console.log(chalk.green("Configuration is valid"));
       } else {
-        console.log(chalk.red("❌ Configuration errors:"));
+        console.log(chalk.red("Configuration errors:"));
         errors.forEach((error) => console.log(chalk.red(`  • ${error}`)));
         process.exit(1);
       }
     } catch (error) {
       console.error(
-        chalk.red("💥 Error validating config:"),
+        chalk.red("Error validating config:"),
         error instanceof Error ? error.message : "Unknown error"
       );
       process.exit(1);
@@ -181,7 +174,7 @@ program
       const transpiler = await FumadocsTranspiler.create(configPath);
       const stats = transpiler.getStats();
 
-      console.log(chalk.blue("📋 Fumadocs Transpiler Information"));
+      console.log(chalk.blue("Fumadocs Transpiler Information"));
       console.log(chalk.gray("─".repeat(40)));
       console.log(`Version: ${chalk.green(stats.version)}`);
       console.log(
@@ -194,7 +187,7 @@ program
       });
     } catch (error) {
       console.error(
-        chalk.red("💥 Error:"),
+        chalk.red("Error:"),
         error instanceof Error ? error.message : "Unknown error"
       );
       process.exit(1);
@@ -206,7 +199,7 @@ program
   .command("examples")
   .description("Show usage examples")
   .action(() => {
-    console.log(chalk.blue("📚 Usage Examples\n"));
+    console.log(chalk.blue("Usage Examples\n"));
 
     console.log(chalk.yellow("Basic usage with output directory:"));
     console.log("  fumadocs-transpiler --input ./docs --output ./src/pages\n");
@@ -254,12 +247,12 @@ try {
 
   if (error.code === "commander.unknownCommand") {
     console.error(
-      chalk.red("❌ Unknown command. Use --help for available commands.")
+      chalk.red("Unknown command. Use --help for available commands.")
     );
     process.exit(1);
   }
 
-  console.error(chalk.red("💥 CLI Error:"), error.message);
+  console.error(chalk.red("CLI Error:"), error.message);
   process.exit(1);
 }
 

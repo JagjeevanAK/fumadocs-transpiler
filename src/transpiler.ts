@@ -33,7 +33,7 @@ export class FumadocsTranspiler {
   public async processFiles(options: CliOptions): Promise<void> {
     const startTime = Date.now();
     const mode = options.reverse ? "reverse transpiler" : "transpiler";
-    console.log(chalk.blue(`🚀 Starting Fumadocs ${mode}...`));
+    console.log(chalk.blue(`Starting Fumadocs ${mode}...`));
 
     try {
       // Find all files (markdown or MDX based on mode)
@@ -41,12 +41,12 @@ export class FumadocsTranspiler {
 
       if (files.length === 0) {
         const fileType = options.reverse ? "MDX" : "markdown";
-        console.log(chalk.yellow(`⚠️  No ${fileType} files found`));
+        console.log(chalk.yellow(`No ${fileType} files found`));
         return;
       }
 
       const fileType = options.reverse ? "MDX" : "markdown";
-      console.log(chalk.green(`📁 Found ${files.length} ${fileType} file(s)`));
+      console.log(chalk.green(`Found ${files.length} ${fileType} file(s)`));
 
       // Process files
       const results: FileProcessingResult[] = [];
@@ -58,7 +58,7 @@ export class FumadocsTranspiler {
           if (options.verbose) {
             console.log(
               chalk.gray(
-                `⏭️  Skipping ${this.fileHandler.getRelativePath(inputFile, options.input)}`
+              `Skipping ${this.fileHandler.getRelativePath(inputFile, options.input)}`
               )
             );
           }
@@ -75,7 +75,7 @@ export class FumadocsTranspiler {
           if (options.verbose) {
             console.log(
               chalk.green(
-                `✅ ${this.fileHandler.getRelativePath(inputFile, options.input)}`
+                `${this.fileHandler.getRelativePath(inputFile, options.input)}`
               )
             );
           }
@@ -83,7 +83,7 @@ export class FumadocsTranspiler {
           errorCount++;
           console.log(
             chalk.red(
-              `❌ ${this.fileHandler.getRelativePath(inputFile, options.input)}`
+              `${this.fileHandler.getRelativePath(inputFile, options.input)}`
             )
           );
           this.printErrors(result.errors);
@@ -92,12 +92,12 @@ export class FumadocsTranspiler {
 
       // Print summary
       const duration = Date.now() - startTime;
-      console.log(chalk.blue("\n📊 Summary:"));
-      console.log(chalk.green(`✅ Processed: ${processedCount} files`));
+      console.log(chalk.blue("\nSummary:"));
+      console.log(chalk.green(`Processed: ${processedCount} files`));
       if (errorCount > 0) {
-        console.log(chalk.red(`❌ Errors: ${errorCount} files`));
+        console.log(chalk.red(`Errors: ${errorCount} files`));
       }
-      console.log(chalk.gray(`⏱️  Duration: ${duration}ms`));
+      console.log(chalk.gray(`Duration: ${duration}ms`));
 
       if (options.dryRun) {
         console.log(
@@ -108,7 +108,7 @@ export class FumadocsTranspiler {
       }
     } catch (error) {
       console.error(
-        chalk.red("💥 Fatal error:"),
+        chalk.red("Fatal error:"),
         error instanceof Error ? error.message : "Unknown error"
       );
       process.exit(1);
@@ -261,7 +261,7 @@ export class FumadocsTranspiler {
   public async watchFiles(options: CliOptions): Promise<void> {
     const chokidar = await import("chokidar");
 
-    console.log(chalk.blue("👀 Watching for changes..."));
+    console.log(chalk.blue("Watching for changes..."));
 
     const watcher = chokidar.watch(path.join(options.input, "**/*.md"), {
       ignored: ["**/node_modules/**", "**/dist/**", "**/build/**"],
@@ -283,13 +283,13 @@ export class FumadocsTranspiler {
       if (result.success) {
         console.log(
           chalk.green(
-            `✅ Transpiled: ${path.relative(options.input, filePath)}`
+            `Transpiled: ${path.relative(options.input, filePath)}`
           )
         );
       } else {
         console.log(
           chalk.red(
-            `❌ Error transpiling: ${path.relative(options.input, filePath)}`
+            `Error transpiling: ${path.relative(options.input, filePath)}`
           )
         );
         this.printErrors(result.errors);
@@ -299,7 +299,7 @@ export class FumadocsTranspiler {
     watcher.on("add", async (filePath) => {
       if (this.fileHandler.shouldProcessFile(filePath)) {
         console.log(
-          chalk.green(`➕ New file: ${path.relative(options.input, filePath)}`)
+          chalk.green(`New file: ${path.relative(options.input, filePath)}`)
         );
 
         const result = await this.processFile(filePath, {
@@ -310,13 +310,13 @@ export class FumadocsTranspiler {
         if (result.success) {
           console.log(
             chalk.green(
-              `✅ Transpiled: ${path.relative(options.input, filePath)}`
+              `Transpiled: ${path.relative(options.input, filePath)}`
             )
           );
         } else {
           console.log(
             chalk.red(
-              `❌ Error transpiling: ${path.relative(options.input, filePath)}`
+              `Error transpiling: ${path.relative(options.input, filePath)}`
             )
           );
           this.printErrors(result.errors);
@@ -326,7 +326,7 @@ export class FumadocsTranspiler {
 
     // Keep the process running
     process.on("SIGINT", () => {
-      console.log(chalk.blue("\n👋 Stopping watcher..."));
+      console.log(chalk.blue("\nStopping watcher..."));
       watcher.close();
       process.exit(0);
     });
@@ -363,14 +363,14 @@ export class FumadocsTranspiler {
           hasErrors = true;
           console.log(
             chalk.red(
-              `❌ ${this.fileHandler.getRelativePath(inputFile, options.input)}`
+              `${this.fileHandler.getRelativePath(inputFile, options.input)}`
             )
           );
           this.printErrors(allErrors);
         } else if (options.verbose) {
           console.log(
             chalk.green(
-              `✅ ${this.fileHandler.getRelativePath(inputFile, options.input)}`
+              `${this.fileHandler.getRelativePath(inputFile, options.input)}`
             )
           );
         }
@@ -378,14 +378,14 @@ export class FumadocsTranspiler {
         hasErrors = true;
         console.log(
           chalk.red(
-            `❌ ${this.fileHandler.getRelativePath(inputFile, options.input)}: ${error instanceof Error ? error.message : "Unknown error"}`
+            `${this.fileHandler.getRelativePath(inputFile, options.input)}: ${error instanceof Error ? error.message : "Unknown error"}`
           )
         );
       }
     }
 
     if (!hasErrors) {
-      console.log(chalk.green("✅ All files are valid"));
+      console.log(chalk.green("All files are valid"));
     }
 
     return !hasErrors;

@@ -24,7 +24,6 @@ export class FileHandler {
       return [];
     }
 
-    // Use glob to find files based on mode
     const extension = reverse ? "**/*.mdx" : "**/*.md";
     const pattern = path.join(inputPath, extension);
     const files = await glob(pattern, {
@@ -70,14 +69,13 @@ export class FileHandler {
     description?: string
   ): Promise<FileProcessingResult> {
     try {
-      // Generate final content with imports, frontmatter, and title
       const finalContent = this.generateFinalContent(
         transformedContent,
         imports,
         frontmatter,
         inputPath,
         description,
-        false // reverse mode handled separately
+        false
       );
 
       if (dryRun) {
@@ -92,16 +90,13 @@ export class FileHandler {
         };
       }
 
-      // Ensure output directory exists
       await fs.ensureDir(path.dirname(outputPath));
 
-      // Backup original file if requested
       if (this.config.backupOriginal && inputPath === outputPath) {
         const backupPath = `${inputPath}.backup`;
         await fs.copy(inputPath, backupPath);
       }
 
-      // Write the transformed file
       await fs.writeFile(outputPath, finalContent, "utf-8");
 
       return {
@@ -137,14 +132,13 @@ export class FileHandler {
     dryRun: boolean = false
   ): Promise<FileProcessingResult> {
     try {
-      // Generate final content for reverse mode
       const finalContent = this.generateFinalContent(
         transformedContent,
-        new Set(), // No imports for reverse mode
+        new Set(),
         frontmatter,
         inputPath,
-        undefined, // No description for reverse mode
-        true // reverse mode
+        undefined,
+        true
       );
 
       if (dryRun) {
@@ -159,16 +153,13 @@ export class FileHandler {
         };
       }
 
-      // Ensure output directory exists
       await fs.ensureDir(path.dirname(outputPath));
 
-      // Backup original file if requested
       if (this.config.backupOriginal && inputPath === outputPath) {
         const backupPath = `${inputPath}.backup`;
         await fs.copy(inputPath, backupPath);
       }
 
-      // Write the transformed file
       await fs.writeFile(outputPath, finalContent, "utf-8");
 
       return {
@@ -206,14 +197,11 @@ export class FileHandler {
     const outputExt = reverse ? ".md" : this.config.outputExtension;
 
     if (!outputDir) {
-      // In-place transformation
       const dir = path.dirname(inputPath);
       const name = path.basename(inputPath, inputExt);
       return path.join(dir, `${name}${outputExt}`);
     }
 
-    // Transform to output directory
-    // Handle case where inputDir is a file path instead of directory
     let actualInputDir = inputDir;
     try {
       const stats = fs.statSync(inputDir);
@@ -221,7 +209,6 @@ export class FileHandler {
         actualInputDir = path.dirname(inputDir);
       }
     } catch {
-      // If we can't stat inputDir, assume it's a directory
       actualInputDir = inputDir;
     }
     
@@ -231,20 +218,14 @@ export class FileHandler {
     return path.join(outputDir, dir, `${name}${outputExt}`);
   }
 
-  /**
-   * Check if file should be processed
-   */
   public shouldProcessFile(filePath: string, reverse: boolean = false): boolean {
-    // Skip backup files
     if (filePath.endsWith(".backup")) {
       return false;
     }
 
     if (reverse) {
-      // For reverse mode, process .mdx files
       return this.isMdxFile(filePath);
     } else {
-      // For normal mode, skip if already has target extension
       if (filePath.endsWith(this.config.outputExtension)) {
         return false;
       }
@@ -339,12 +320,10 @@ export class FileHandler {
     const lines = content.split('\n');
     let startIndex = 0;
     
-    // Find the first non-empty line
     for (let i = 0; i < lines.length; i++) {
       const trimmedLine = lines[i].trim();
       if (trimmedLine) {
         if (trimmedLine.startsWith('# ')) {
-          // Skip the title line and any following empty lines
           startIndex = i + 1;
           while (startIndex < lines.length && !lines[startIndex].trim()) {
             startIndex++;
@@ -357,14 +336,10 @@ export class FileHandler {
     return lines.slice(startIndex).join('\n');
   }
 
-  /**
-   * Convert frontmatter back to title for reverse mode
-   */
   public convertFrontmatterToTitle(frontmatter: any, content: string): string {
     let result = content;
     
     if (frontmatter && frontmatter.title) {
-      // Add title as # heading at the beginning
       result = `# ${frontmatter.title}\n\n${content}`;
     }
     
