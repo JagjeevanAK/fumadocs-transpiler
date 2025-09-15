@@ -2,6 +2,7 @@ import * as path from "path";
 import chalk from "chalk";
 import { AnnotationParser } from "./parser";
 import { AnnotationTransformer } from "./transformer";
+import { ReverseTransformer } from "./reverse-transformer";
 import { FileHandler } from "./file-handler";
 import { ConfigManager } from "./config";
 import {
@@ -14,6 +15,7 @@ import {
 export class FumadocsTranspiler {
   private parser: AnnotationParser;
   private transformer: AnnotationTransformer;
+  private reverseTransformer: ReverseTransformer;
   private fileHandler: FileHandler;
   private config: TranspilerConfig;
 
@@ -21,6 +23,7 @@ export class FumadocsTranspiler {
     this.config = config;
     this.parser = new AnnotationParser();
     this.transformer = new AnnotationTransformer(config);
+    this.reverseTransformer = new ReverseTransformer(config);
     this.fileHandler = new FileHandler(config);
   }
 
@@ -29,18 +32,21 @@ export class FumadocsTranspiler {
    */
   public async processFiles(options: CliOptions): Promise<void> {
     const startTime = Date.now();
-    console.log(chalk.blue("🚀 Starting Fumadocs transpiler..."));
+    const mode = options.reverse ? "reverse transpiler" : "transpiler";
+    console.log(chalk.blue(`🚀 Starting Fumadocs ${mode}...`));
 
     try {
-      // Find all markdown files
-      const files = await this.fileHandler.findMarkdownFiles(options.input);
+      // Find all files (markdown or MDX based on mode)
+      const files = await this.fileHandler.findMarkdownFiles(options.input, options.reverse);
 
       if (files.length === 0) {
-        console.log(chalk.yellow("⚠️  No markdown files found"));
+        const fileType = options.reverse ? "MDX" : "markdown";
+        console.log(chalk.yellow(`⚠️  No ${fileType} files found`));
         return;
       }
 
-      console.log(chalk.green(`📁 Found ${files.length} markdown file(s)`));
+      const fileType = options.reverse ? "MDX" : "markdown";
+      console.log(chalk.green(`📁 Found ${files.length} ${fileType} file(s)`));
 
       // Process files
       const results: FileProcessingResult[] = [];
@@ -48,7 +54,7 @@ export class FumadocsTranspiler {
       let errorCount = 0;
 
       for (const inputFile of files) {
-        if (!this.fileHandler.shouldProcessFile(inputFile)) {
+        if (!this.fileHandler.shouldProcessFile(inputFile, options.reverse)) {
           if (options.verbose) {
             console.log(
               chalk.gray(
@@ -59,7 +65,9 @@ export class FumadocsTranspiler {
           continue;
         }
 
-        const result = await this.processFile(inputFile, options);
+        const result = options.reverse 
+          ? await this.processReverseFile(inputFile, options)
+          : await this.processFile(inputFile, options);
         results.push(result);
 
         if (result.success) {
@@ -143,7 +151,8 @@ export class FumadocsTranspiler {
       const outputPath = this.fileHandler.generateOutputPath(
         inputPath,
         options.input,
-        options.output
+        options.output,
+        false // not reverse mode
       );
 
       // Write transformed file
@@ -161,6 +170,67 @@ export class FumadocsTranspiler {
       const allErrors = [
         ...parseErrors,
         ...validationErrors,
+        ...transformErrors,
+        ...writeResult.errors,
+      ];
+
+      return {
+        ...writeResult,
+        errors: allErrors,
+      };
+    } catch (error) {
+      return {
+        inputPath,
+        outputPath: "",
+        success: false,
+        errors: [
+          {
+            message: `Failed to process file: ${error instanceof Error ? error.message : "Unknown error"}`,
+            line: 0,
+            type: "error",
+          },
+        ],
+      };
+    }
+  }
+
+  /**
+   * Process a single file in reverse mode (MDX to Markdown)
+   */
+  public async processReverseFile(
+    inputPath: string,
+    options: CliOptions
+  ): Promise<FileProcessingResult> {
+    try {
+      // Read the MDX file
+      const { content, frontmatter } =
+        await this.fileHandler.readMarkdownFile(inputPath);
+
+      // Reverse transform the content
+      const {
+        content: transformedContent,
+        errors: transformErrors,
+      } = this.reverseTransformer.reverseTransform(content);
+
+      // Generate output path for reverse mode
+      const outputPath = this.fileHandler.generateOutputPath(
+        inputPath,
+        options.input,
+        options.output,
+        true // reverse mode
+      );
+
+      // Write reverse transformed file
+      const writeResult = await this.fileHandler.writeReverseTransformedFile(
+        inputPath,
+        outputPath,
+        transformedContent,
+        frontmatter,
+        options.dryRun
+      );
+
+      // Combine all errors
+      const allErrors = [
         ...transformErrors,
         ...writeResult.errors,
       ];

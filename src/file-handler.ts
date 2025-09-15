@@ -14,18 +14,19 @@ export class FileHandler {
   /**
    * Find all markdown files in a directory
    */
-  public async findMarkdownFiles(inputPath: string): Promise<string[]> {
+  public async findMarkdownFiles(inputPath: string, reverse: boolean = false): Promise<string[]> {
     const stats = await fs.stat(inputPath);
 
     if (stats.isFile()) {
-      if (this.isMarkdownFile(inputPath)) {
+      if (reverse ? this.isMdxFile(inputPath) : this.isMarkdownFile(inputPath)) {
         return [inputPath];
       }
       return [];
     }
 
-    // Use glob to find all .md files recursively
-    const pattern = path.join(inputPath, "**/*.md");
+    // Use glob to find files based on mode
+    const extension = reverse ? "**/*.mdx" : "**/*.md";
+    const pattern = path.join(inputPath, extension);
     const files = await glob(pattern, {
       ignore: ["**/node_modules/**", "**/dist/**", "**/build/**"],
       absolute: true,
@@ -75,7 +76,75 @@ export class FileHandler {
         imports,
         frontmatter,
         inputPath,
-        description
+        description,
+        false // reverse mode handled separately
+      );
+
+      if (dryRun) {
+        console.log(`[DRY RUN] Would write to: ${outputPath}`);
+        console.log("Content preview:");
+        console.log(finalContent.substring(0, 200) + "...");
+        return {
+          inputPath,
+          outputPath,
+          success: true,
+          errors: [],
+        };
+      }
+
+      // Ensure output directory exists
+      await fs.ensureDir(path.dirname(outputPath));
+
+      // Backup original file if requested
+      if (this.config.backupOriginal && inputPath === outputPath) {
+        const backupPath = `${inputPath}.backup`;
+        await fs.copy(inputPath, backupPath);
+      }
+
+      // Write the transformed file
+      await fs.writeFile(outputPath, finalContent, "utf-8");
+
+      return {
+        inputPath,
+        outputPath,
+        success: true,
+        errors: [],
+      };
+    } catch (error) {
+      return {
+        inputPath,
+        outputPath,
+        success: false,
+        errors: [
+          {
+            message: `Failed to write file: ${error instanceof Error ? error.message : "Unknown error"}`,
+            line: 0,
+            type: "error",
+          },
+        ],
+      };
+    }
+  }
+
+  /**
+   * Write reverse transformed content to output file
+   */
+  public async writeReverseTransformedFile(
+    inputPath: string,
+    outputPath: string,
+    transformedContent: string,
+    frontmatter: any,
+    dryRun: boolean = false
+  ): Promise<FileProcessingResult> {
+    try {
+      // Generate final content for reverse mode
+      const finalContent = this.generateFinalContent(
+        transformedContent,
+        new Set(), // No imports for reverse mode
+        frontmatter,
+        inputPath,
+        undefined, // No description for reverse mode
+        true // reverse mode
       );
 
       if (dryRun) {
@@ -130,13 +199,17 @@ export class FileHandler {
   public generateOutputPath(
     inputPath: string,
     inputDir: string,
-    outputDir?: string
+    outputDir?: string,
+    reverse: boolean = false
   ): string {
+    const inputExt = reverse ? ".mdx" : ".md";
+    const outputExt = reverse ? ".md" : this.config.outputExtension;
+
     if (!outputDir) {
       // In-place transformation
       const dir = path.dirname(inputPath);
-      const name = path.basename(inputPath, ".md");
-      return path.join(dir, `${name}${this.config.outputExtension}`);
+      const name = path.basename(inputPath, inputExt);
+      return path.join(dir, `${name}${outputExt}`);
     }
 
     // Transform to output directory
@@ -154,25 +227,29 @@ export class FileHandler {
     
     const relativePath = path.relative(actualInputDir, inputPath);
     const dir = path.dirname(relativePath);
-    const name = path.basename(relativePath, ".md");
-    return path.join(outputDir, dir, `${name}${this.config.outputExtension}`);
+    const name = path.basename(relativePath, inputExt);
+    return path.join(outputDir, dir, `${name}${outputExt}`);
   }
 
   /**
    * Check if file should be processed
    */
-  public shouldProcessFile(filePath: string): boolean {
-    // Skip if already has target extension
-    if (filePath.endsWith(this.config.outputExtension)) {
-      return false;
-    }
-
+  public shouldProcessFile(filePath: string, reverse: boolean = false): boolean {
     // Skip backup files
     if (filePath.endsWith(".backup")) {
       return false;
     }
 
-    return this.isMarkdownFile(filePath);
+    if (reverse) {
+      // For reverse mode, process .mdx files
+      return this.isMdxFile(filePath);
+    } else {
+      // For normal mode, skip if already has target extension
+      if (filePath.endsWith(this.config.outputExtension)) {
+        return false;
+      }
+      return this.isMarkdownFile(filePath);
+    }
   }
 
   /**
@@ -233,6 +310,14 @@ export class FileHandler {
   }
 
   /**
+   * Check if path is an MDX file
+   */
+  private isMdxFile(filePath: string): boolean {
+    const ext = path.extname(filePath).toLowerCase();
+    return ext === ".mdx";
+  }
+
+  /**
    * Extract title from markdown content (first # heading)
    */
   public extractTitleFromContent(content: string): string | null {
@@ -273,6 +358,20 @@ export class FileHandler {
   }
 
   /**
+   * Convert frontmatter back to title for reverse mode
+   */
+  public convertFrontmatterToTitle(frontmatter: any, content: string): string {
+    let result = content;
+    
+    if (frontmatter && frontmatter.title) {
+      // Add title as # heading at the beginning
+      result = `# ${frontmatter.title}\n\n${content}`;
+    }
+    
+    return result;
+  }
+
+  /**
    * Generate final file content with imports, frontmatter, and title
    */
   private generateFinalContent(
@@ -280,8 +379,14 @@ export class FileHandler {
     imports: Set<string>,
     frontmatter: any,
     inputPath: string,
-    description?: string
+    description?: string,
+    reverse: boolean = false
   ): string {
+    if (reverse) {
+      // For reverse mode, convert frontmatter back to title and return plain content
+      return this.convertFrontmatterToTitle(frontmatter, content);
+    }
+
     let result = "";
 
     // Extract title from content

@@ -12,6 +12,7 @@ export interface CliOptions {
   input: string;
   output?: string;
   description?: string;
+  reverse?: boolean;
   watch?: boolean;
   config?: string;
   dryRun?: boolean;

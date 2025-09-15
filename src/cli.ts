@@ -22,13 +22,14 @@ program
   .option("-i, --input <path>", "Input directory or file path (required)")
   .option("-o, --output <path>", "Output directory (optional, defaults to input location)")
   .option("--description <text>", "Description to add to frontmatter")
+  .option("-r, --reverse", "Reverse transpile: convert MDX back to annotated Markdown")
   .option("-w, --watch", "Watch for file changes and auto-transpile")
   .option("-c, --config <path>", "Path to configuration file")
   .option("-d, --dry-run", "Preview changes without writing files")
   .option("-b, --backup", "Create backup of original files")
   .option("-v, --verbose", "Enable verbose output")
   .option("--validate-only", "Only validate files without transpiling")
-  .action(async (options: { input?: string; output?: string; description?: string; watch?: boolean; config?: string; dryRun?: boolean; backup?: boolean; verbose?: boolean; validateOnly?: boolean }) => {
+  .action(async (options: { input?: string; output?: string; description?: string; reverse?: boolean; watch?: boolean; config?: string; dryRun?: boolean; backup?: boolean; verbose?: boolean; validateOnly?: boolean }) => {
     try {
       // Check if input is provided
       if (!options.input) {
@@ -67,6 +68,7 @@ program
         input: inputPath,
         output: outputPath,
         description: options.description,
+        reverse: options.reverse,
         watch: options.watch,
         config: configPath,
         dryRun: options.dryRun,
@@ -223,6 +225,9 @@ program
 
     console.log(chalk.yellow("With description:"));
     console.log('  fumadocs-transpiler --input ./docs --description "API documentation"\n');
+
+    console.log(chalk.yellow("Reverse transpile (MDX to Markdown):"));
+    console.log("  fumadocs-transpiler --input ./src/pages --output ./docs --reverse\n");
 
     console.log(chalk.yellow("With custom config:"));
     console.log("  fumadocs-transpiler --input ./docs --config ./my-config.json\n");

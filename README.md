@@ -15,6 +15,8 @@ A powerful Node.js transpiler that converts annotated Markdown files to Fuma-doc
 - **Automatic Title Extraction**: Extracts titles from `# heading` and adds to frontmatter
 - **Description Support**: Add custom descriptions to frontmatter via CLI flag
 - **Smart Frontmatter Generation**: Creates proper YAML frontmatter with title and description
+- **Reverse Transpilation**: Convert existing MDX files back to annotated Markdown
+- **Bidirectional Conversion**: Perfect round-trip compatibility between formats
 - **Batch Processing**: Process multiple files and directories recursively
 - **Watch Mode**: Auto-transpile on file changes during development
 - **Validation**: Syntax validation with helpful error messages
@@ -73,7 +75,15 @@ Auto-transpile on file changes:
 fumadocs-transpiler --input ./docs --watch
 ```
 
-### 5. Dry Run
+### 5. Reverse Transpilation
+
+Convert existing MDX files back to annotated Markdown:
+
+```bash
+fumadocs-transpiler --input ./src/pages --output ./docs --reverse
+```
+
+### 6. Dry Run
 
 Preview changes without writing files:
 
@@ -133,6 +143,94 @@ This is the content of your documentation...
 - **Description only**: If no `# heading` exists, only the description is added
 - **Both**: When both exist, both title and description are included
 - **Existing frontmatter**: Any existing frontmatter is preserved and merged
+
+## 🔄 Reverse Transpilation
+
+The transpiler supports bidirectional conversion, allowing you to convert existing Fumadocs MDX files back to annotated Markdown format.
+
+### When to Use Reverse Transpilation
+
+- **Migration**: Moving from Fumadocs to another documentation system
+- **Editing**: Converting MDX back to Markdown for easier editing
+- **Backup**: Creating Markdown backups of your MDX files
+- **Collaboration**: Sharing files with team members who prefer Markdown
+
+### How Reverse Transpilation Works
+
+The reverse transpiler automatically:
+
+1. **Converts components back to annotations**
+2. **Extracts title from frontmatter** and converts to `# heading`
+3. **Removes import statements**
+4. **Preserves regular Markdown content**
+
+### Reverse Conversion Examples
+
+**Input MDX:**
+```mdx
+---
+title: "Getting Started"
+description: "Learn how to use our product"
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+<Callout type="info">
+This is helpful information for users.
+</Callout>
+
+<Tabs items={["npm", "yarn", "pnpm"]}>
+  <Tab value="npm">npm install package</Tab>
+  <Tab value="yarn">yarn add package</Tab>
+  <Tab value="pnpm">pnpm add package</Tab>
+</Tabs>
+```
+
+**Output Markdown:**
+```markdown
+# Getting Started
+
+This is helpful information for users.
+
+:::callout-info
+This is helpful information for users.
+:::
+
+:::tabs
+npm|npm install package
+yarn|yarn add package
+pnpm|pnpm add package
+:::
+```
+
+### Reverse Transpilation Usage
+
+```bash
+# Basic reverse transpilation
+fumadocs-transpiler --input ./src/pages --reverse
+
+# With custom output directory
+fumadocs-transpiler --input ./src/pages --output ./docs --reverse
+
+# Preview reverse changes
+fumadocs-transpiler --input ./src/pages --reverse --dry-run
+
+# Watch mode for reverse transpilation
+fumadocs-transpiler --input ./src/pages --reverse --watch
+```
+
+### Supported Reverse Conversions
+
+| MDX Component | Markdown Annotation |
+|---------------|-------------------|
+| `<Callout type="info">` | `:::callout-info` |
+| `<Tabs items={[...]}>` | `:::tabs` |
+| `<Steps>` | `:::steps` |
+| `<Accordions>` | `:::accordion` |
+| `<CodeBlock>` | `:::code-block` |
+| `<Files>` | `:::files` |
+| `<Banner>` | `:::banner` |
 
 ## Annotation Syntax
 
@@ -384,6 +482,7 @@ fumadocs-transpiler [options]
 
 - `-o, --output <path>`: Output directory (defaults to input location for in-place transformation)
 - `--description <text>`: Description to add to frontmatter
+- `-r, --reverse`: Reverse transpile: convert MDX back to annotated Markdown
 - `-w, --watch`: Watch for file changes and auto-transpile
 - `-c, --config <path>`: Path to configuration file
 - `-d, --dry-run`: Preview changes without writing files
@@ -402,6 +501,9 @@ fumadocs-transpiler --input ./docs
 
 # With description
 fumadocs-transpiler -i ./docs -o ./src/pages --description "API documentation"
+
+# Reverse transpilation
+fumadocs-transpiler --input ./src/pages --output ./docs --reverse
 
 # Watch mode with verbose output
 fumadocs-transpiler --input ./docs --watch --verbose
@@ -450,6 +552,19 @@ fumadocs-transpiler --input ./docs --description "Complete API documentation"
 
 # Transform with both output directory and description
 fumadocs-transpiler -i ./docs -o ./src/pages --description "User guide documentation"
+```
+
+### Reverse Transpilation
+
+```bash
+# Convert MDX files back to Markdown
+fumadocs-transpiler --input ./src/pages --reverse
+
+# Reverse with custom output directory
+fumadocs-transpiler --input ./src/pages --output ./docs --reverse
+
+# Preview reverse changes
+fumadocs-transpiler --input ./src/pages --reverse --dry-run --verbose
 ```
 
 ### Development Workflow
