@@ -12,13 +12,15 @@ A powerful Node.js transpiler that converts annotated Markdown files to Fuma-doc
 - **Simple Annotation Syntax**: Use triple colons (`:::`) to define components
 - **Built-in Components**: Support for callouts, tabs, steps, accordions, code blocks, files, and banners
 - **Custom Components**: Extensible configuration for custom component mappings
+- **Automatic Title Extraction**: Extracts titles from `# heading` and adds to frontmatter
+- **Description Support**: Add custom descriptions to frontmatter via CLI flag
+- **Smart Frontmatter Generation**: Creates proper YAML frontmatter with title and description
 - **Batch Processing**: Process multiple files and directories recursively
 - **Watch Mode**: Auto-transpile on file changes during development
 - **Validation**: Syntax validation with helpful error messages
 - **Backup Support**: Optional backup of original files
 - **Dry Run**: Preview changes without modifying files
 - **Frontmatter Preservation**: Maintains existing frontmatter in files
-- **Auto Title Generation**: Automatically adds page titles based on filename
 - **Cross-platform**: Works on Windows, macOS, and Linux
 
 ## Installation
@@ -41,35 +43,96 @@ yarn add fumadocs-transpiler
 
 ### 1. Basic Usage
 
-Transform all `.md` files in a directory:
+Transform all `.md` files with output directory:
 
 ```bash
-fumadocs-transpiler ./docs ./src/pages
+fumadocs-transpiler --input ./docs --output ./src/pages
 ```
 
 ### 2. In-place Transformation
 
-Transform files in the same directory:
+Transform files in the same directory (default behavior):
 
 ```bash
-fumadocs-transpiler ./docs
+fumadocs-transpiler --input ./docs
 ```
 
-### 3. Watch Mode
+### 3. With Description
+
+Add custom description to frontmatter:
+
+```bash
+fumadocs-transpiler --input ./docs --description "API documentation guide"
+```
+
+### 4. Watch Mode
 
 Auto-transpile on file changes:
 
 ```bash
-fumadocs-transpiler ./docs --watch
+fumadocs-transpiler --input ./docs --watch
 ```
 
-### 4. Dry Run
+### 5. Dry Run
 
 Preview changes without writing files:
 
 ```bash
-fumadocs-transpiler ./docs --dry-run
+fumadocs-transpiler --input ./docs --dry-run
 ```
+
+## 🎯 Title Extraction & Frontmatter
+
+The transpiler automatically extracts titles from your markdown files and creates proper frontmatter.
+
+### Automatic Title Extraction
+
+When your markdown file starts with a `# heading`, the transpiler will:
+
+1. **Extract the title** from the `# heading`
+2. **Remove the heading** from the content
+3. **Add it to frontmatter** as `title: "extracted title"`
+
+**Input markdown:**
+```markdown
+# Getting Started Guide
+
+This is the content of your documentation...
+```
+
+**Output:**
+```markdown
+---
+title: "Getting Started Guide"
+---
+
+This is the content of your documentation...
+```
+
+### Adding Descriptions
+
+Use the `--description` flag to add descriptions to your frontmatter:
+
+```bash
+fumadocs-transpiler --input ./docs --description "Complete API reference"
+```
+
+**Output with both title and description:**
+```markdown
+---
+title: "Getting Started Guide"
+description: "Complete API reference"
+---
+
+This is the content of your documentation...
+```
+
+### Frontmatter Behavior
+
+- **Title only**: If no `--description` flag is used, only the title is added
+- **Description only**: If no `# heading` exists, only the description is added
+- **Both**: When both exist, both title and description are included
+- **Existing frontmatter**: Any existing frontmatter is preserved and merged
 
 ## Annotation Syntax
 
@@ -277,7 +340,6 @@ This creates a `fumadocs-transpiler.config.json` file:
 | `imports`           | Array   | Built-in imports  | Import statements to add to files              |
 | `backupOriginal`    | Boolean | `false`           | Create backup files before transformation      |
 | `validateSyntax`    | Boolean | `true`            | Enable syntax validation                       |
-| `addTitle`          | Boolean | `true`            | Automatically add page title based on filename |
 
 ### Custom Components
 
@@ -304,30 +366,6 @@ This is a custom alert component
 This text will be highlighted
 :::
 
-### Auto Title Generation
-
-The transpiler automatically adds a title at the top of each `.mdx` file based on the filename:
-
-**Examples:**
-
-- `getting-started.md` → `# Getting Started`
-- `api-reference.md` → `# API Reference`
-- `user-guide.md` → `# User Guide`
-- `faq.md` → `# FAQ`
-
-**Title Generation Rules:**
-
-- Hyphens and underscores are converted to spaces
-- Each word is capitalized
-- Common tech acronyms are preserved (API, FAQ, URL, HTML, CSS, etc.)
-
-**Disable Title Generation:**
-
-```json
-{
-  "addTitle": false
-}
-```
 ````
 
 ## CLI Commands
@@ -335,22 +373,39 @@ The transpiler automatically adds a title at the top of each `.mdx` file based o
 ### Main Command
 
 ```bash
-fumadocs-transpiler <input> [output] [options]
+fumadocs-transpiler [options]
 ```
 
-**Arguments:**
+**Required Options:**
 
-- `input`: Input directory or file path (required)
-- `output`: Output directory (optional, defaults to in-place transformation)
+- `-i, --input <path>`: Input directory or file path (required)
 
-**Options:**
+**Optional Flags:**
 
+- `-o, --output <path>`: Output directory (defaults to input location for in-place transformation)
+- `--description <text>`: Description to add to frontmatter
 - `-w, --watch`: Watch for file changes and auto-transpile
 - `-c, --config <path>`: Path to configuration file
 - `-d, --dry-run`: Preview changes without writing files
 - `-b, --backup`: Create backup of original files
 - `-v, --verbose`: Enable verbose output
 - `--validate-only`: Only validate files without transpiling
+
+**Examples:**
+
+```bash
+# Basic usage with output directory
+fumadocs-transpiler --input ./docs --output ./src/pages
+
+# In-place transformation
+fumadocs-transpiler --input ./docs
+
+# With description
+fumadocs-transpiler -i ./docs -o ./src/pages --description "API documentation"
+
+# Watch mode with verbose output
+fumadocs-transpiler --input ./docs --watch --verbose
+```
 
 ### Configuration Commands
 
@@ -378,38 +433,54 @@ fumadocs-transpiler examples
 
 ```bash
 # Transform docs directory to src/pages
-fumadocs-transpiler ./docs ./src/pages
+fumadocs-transpiler --input ./docs --output ./src/pages
 
 # Transform with verbose output
-fumadocs-transpiler ./docs ./src/pages --verbose
+fumadocs-transpiler --input ./docs --output ./src/pages --verbose
+
+# In-place transformation
+fumadocs-transpiler --input ./docs
+```
+
+### With Title & Description
+
+```bash
+# Add description to all files
+fumadocs-transpiler --input ./docs --description "Complete API documentation"
+
+# Transform with both output directory and description
+fumadocs-transpiler -i ./docs -o ./src/pages --description "User guide documentation"
 ```
 
 ### Development Workflow
 
 ```bash
 # Watch mode for development
-fumadocs-transpiler ./docs --watch --verbose
+fumadocs-transpiler --input ./docs --watch --verbose
 
 # Dry run to preview changes
-fumadocs-transpiler ./docs --dry-run
+fumadocs-transpiler --input ./docs --dry-run
+
+# Dry run with description to see frontmatter preview
+fumadocs-transpiler --input ./docs --description "Test description" --dry-run
 ```
 
 ### With Configuration
 
 ```bash
 # Use custom config file
-fumadocs-transpiler ./docs --config ./my-config.json
+fumadocs-transpiler --input ./docs --config ./my-config.json
 
 # Create and use config
 fumadocs-transpiler config init
-fumadocs-transpiler ./docs
+fumadocs-transpiler --input ./docs
 ```
 
 ### Validation
 
 ```bash
 # Validate files only
-fumadocs-transpiler ./docs --validate-only
+fumadocs-transpiler --input ./docs --validate-only
 
 # Validate configuration
 fumadocs-transpiler config validate
@@ -433,6 +504,7 @@ const customTranspiler = new FumadocsTranspiler(config);
 await transpiler.processFiles({
   input: "./docs",
   output: "./src/pages",
+  description: "API documentation",
   verbose: true,
 });
 ```
