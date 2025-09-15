@@ -23,7 +23,7 @@ describe("AnnotationTransformer", () => {
     it("should transform callout annotations", () => {
       const content = `# Title
 
-:::callout-info
+::: callout-info
 This is an info message
 :::
 
@@ -36,7 +36,7 @@ Some text`;
           attributes: {},
           startLine: 3,
           endLine: 5,
-          originalText: ":::callout-info\nThis is an info message\n:::",
+          originalText: "::: callout-info\nThis is an info message\n:::",
         },
       ];
 
@@ -54,7 +54,7 @@ Some text`;
     });
 
     it("should transform tabs annotations", () => {
-      const content = `:::tabs
+      const content = `::: tabs
 Tab 1|Content for tab 1
 Tab 2|Content for tab 2
 :::`;
@@ -67,7 +67,7 @@ Tab 2|Content for tab 2
           startLine: 1,
           endLine: 4,
           originalText:
-            ":::tabs\nTab 1|Content for tab 1\nTab 2|Content for tab 2\n:::",
+            "::: tabs\nTab 1|Content for tab 1\nTab 2|Content for tab 2\n:::",
         },
       ];
 
@@ -88,7 +88,7 @@ Tab 2|Content for tab 2
     });
 
     it("should transform steps annotations", () => {
-      const content = `:::steps
+      const content = `::: steps
 Step 1: First step description
 Step 2: Second step description
 :::`;
@@ -102,7 +102,7 @@ Step 2: Second step description
           startLine: 1,
           endLine: 4,
           originalText:
-            ":::steps\nStep 1: First step description\nStep 2: Second step description\n:::",
+            "::: steps\nStep 1: First step description\nStep 2: Second step description\n:::",
         },
       ];
 
@@ -124,7 +124,7 @@ Step 2: Second step description
     });
 
     it("should transform accordion annotations", () => {
-      const content = `:::accordion
+      const content = `::: accordion
 Question 1|Answer to question 1
 Question 2|Answer to question 2
 :::`;
@@ -138,7 +138,7 @@ Question 2|Answer to question 2
           startLine: 1,
           endLine: 4,
           originalText:
-            ":::accordion\nQuestion 1|Answer to question 1\nQuestion 2|Answer to question 2\n:::",
+            "::: accordion\nQuestion 1|Answer to question 1\nQuestion 2|Answer to question 2\n:::",
         },
       ];
 
@@ -159,7 +159,7 @@ Question 2|Answer to question 2
     });
 
     it("should transform code-block annotations", () => {
-      const content = `:::code-block lang="javascript" title="Example"
+      const content = `::: code-block lang="javascript" title="Example"
 console.log('Hello World');
 :::`;
 
@@ -171,7 +171,7 @@ console.log('Hello World');
           startLine: 1,
           endLine: 3,
           originalText:
-            ':::code-block lang="javascript" title="Example"\nconsole.log(\'Hello World\');\n:::',
+            '::: code-block lang="javascript" title="Example"\nconsole.log(\'Hello World\');\n:::'
         },
       ];
 
@@ -192,7 +192,7 @@ console.log('Hello World');
     });
 
     it("should transform files annotations", () => {
-      const content = `:::files
+      const content = `::: files
 src/
   components/
     Button.tsx
@@ -209,7 +209,7 @@ src/
           startLine: 1,
           endLine: 7,
           originalText:
-            ":::files\nsrc/\n  components/\n    Button.tsx\n  pages/\n    index.tsx\n:::",
+            "::: files\nsrc/\n  components/\n    Button.tsx\n  pages/\n    index.tsx\n:::",
         },
       ];
 
@@ -231,7 +231,7 @@ src/
     });
 
     it("should transform banner annotations", () => {
-      const content = `:::banner type="info"
+      const content = `::: banner type="info"
 This is a banner message
 :::`;
 
@@ -242,7 +242,7 @@ This is a banner message
           attributes: { type: "info" },
           startLine: 1,
           endLine: 3,
-          originalText: ':::banner type="info"\nThis is a banner message\n:::',
+          originalText: '::: banner type="info"\nThis is a banner message\n:::'
         },
       ];
 
@@ -260,7 +260,7 @@ This is a banner message
     });
 
     it("should transform custom component annotations", () => {
-      const content = `:::custom-component
+      const content = `::: custom-component
 Custom content here
 :::`;
 
@@ -271,7 +271,7 @@ Custom content here
           attributes: {},
           startLine: 1,
           endLine: 3,
-          originalText: ":::custom-component\nCustom content here\n:::",
+          originalText: "::: custom-component\nCustom content here\n:::",
         },
       ];
 
@@ -286,13 +286,13 @@ Custom content here
     it("should handle multiple annotations in correct order", () => {
       const content = `# Title
 
-:::callout-info
+::: callout-info
 First annotation
 :::
 
 Some text
 
-:::callout-warn
+::: callout-warn
 Second annotation
 :::
 
@@ -305,7 +305,7 @@ More text`;
           attributes: {},
           startLine: 3,
           endLine: 5,
-          originalText: ":::callout-info\nFirst annotation\n:::",
+          originalText: "::: callout-info\nFirst annotation\n:::",
         },
         {
           type: "callout-warn",
@@ -313,7 +313,7 @@ More text`;
           attributes: {},
           startLine: 9,
           endLine: 11,
-          originalText: ":::callout-warn\nSecond annotation\n:::",
+          originalText: "::: callout-warn\nSecond annotation\n:::",
         },
       ];
 
@@ -327,7 +327,7 @@ More text`;
     });
 
     it("should handle transformation errors gracefully", () => {
-      const content = `:::unknown-type
+      const content = `::: unknown-type
 Some content
 :::`;
 
@@ -338,7 +338,7 @@ Some content
           attributes: {},
           startLine: 1,
           endLine: 3,
-          originalText: ":::unknown-type\nSome content\n:::",
+          originalText: "::: unknown-type\nSome content\n:::",
         },
       ];
 

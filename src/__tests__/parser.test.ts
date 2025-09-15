@@ -11,7 +11,7 @@ describe("AnnotationParser", () => {
     it("should parse simple callout annotation", () => {
       const content = `# Title
 
-:::callout-info
+::: callout-info
 This is an info message
 :::
 
@@ -27,12 +27,12 @@ Some text`;
         attributes: {},
         startLine: 3,
         endLine: 5,
-        originalText: ":::callout-info\nThis is an info message\n:::",
+        originalText: "::: callout-info\nThis is an info message\n:::",
       });
     });
 
     it("should parse annotation with attributes", () => {
-      const content = `:::code-block lang="javascript" title="Example"
+      const content = `::: code-block lang="javascript" title="Example"
 console.log('Hello');
 :::`;
 
@@ -49,11 +49,11 @@ console.log('Hello');
     });
 
     it("should parse multiple annotations", () => {
-      const content = `:::callout-info
+      const content = `::: callout-info
 First message
 :::
 
-:::callout-warn
+::: callout-warn
 Second message
 :::`;
 
@@ -66,7 +66,7 @@ Second message
     });
 
     it("should handle multiline content", () => {
-      const content = `:::tabs
+      const content = `::: tabs
 Tab 1|Line 1
 Line 2
 Tab 2|Another line
@@ -82,7 +82,7 @@ Tab 2|Another line`);
     });
 
     it("should detect unclosed annotation blocks", () => {
-      const content = `:::callout-info
+      const content = `::: callout-info
 This is not closed
 
 Some other text`;
@@ -109,9 +109,9 @@ More text`;
     });
 
     it("should handle nested annotation attempt", () => {
-      const content = `:::callout-info
+      const content = `::: callout-info
 Outer content
-:::callout-warn
+::: callout-warn
 Inner content
 :::
 :::`;
@@ -132,7 +132,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ":::callout-info\nValid content\n:::",
+        originalText: "::: callout-info\nValid content\n:::",
       };
 
       const errors = parser.validateAnnotation(block);
@@ -146,7 +146,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ":::callout-info\n   \n:::",
+        originalText: "::: callout-info\n   \n:::",
       };
 
       const errors = parser.validateAnnotation(block);
@@ -162,7 +162,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ":::tabs\nTab 1|Content 1\nTab 2|Content 2\n:::",
+        originalText: "::: tabs\nTab 1|Content 1\nTab 2|Content 2\n:::",
       };
 
       const errors = parser.validateAnnotation(validBlock);
@@ -176,7 +176,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ":::tabs\nTab 1 without pipe\nTab 2|Content 2\n:::",
+        originalText: "::: tabs\nTab 1 without pipe\nTab 2|Content 2\n:::",
       };
 
       const errors = parser.validateAnnotation(invalidBlock);
@@ -191,7 +191,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ":::steps\nStep 1: First step\nStep 2: Second step\n:::",
+        originalText: "::: steps\nStep 1: First step\nStep 2: Second step\n:::",
       };
 
       const errors = parser.validateAnnotation(validBlock);
@@ -205,7 +205,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ':::code-block\nconsole.log("test");\n:::',
+        originalText: '::: code-block\nconsole.log("test");\n:::',
       };
 
       const errors = parser.validateAnnotation(block);
@@ -221,7 +221,7 @@ Inner content
         attributes: {},
         startLine: 1,
         endLine: 3,
-        originalText: ":::unknown-type\nSome content\n:::",
+        originalText: "::: unknown-type\nSome content\n:::",
       };
 
       const errors = parser.validateAnnotation(block);
