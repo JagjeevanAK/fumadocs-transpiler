@@ -4,19 +4,19 @@ This is a comprehensive example showing all supported Fumadocs components that c
 
 ## Callout Components
 
-:::callout-info
+::: callout-info
 This is an informational callout that provides helpful context to users.
 :::
 
-:::callout-warn
+::: callout-warn
 This is a warning callout that alerts users to potential issues.
 :::
 
-:::callout-error
+::: callout-error
 This is an error callout that highlights critical problems.
 :::
 
-:::callout-note
+::: callout-note
 This is a note callout for additional information.
 :::
 
@@ -24,7 +24,7 @@ This is a note callout for additional information.
 
 ### Installation Tabs
 
-:::tabs
+::: tabs
 npm|npm install fumadocs-transpiler
 yarn|yarn add fumadocs-transpiler
 pnpm|pnpm add fumadocs-transpiler
@@ -32,7 +32,7 @@ pnpm|pnpm add fumadocs-transpiler
 
 ### Step-by-Step Guide
 
-:::steps
+::: steps
 Step 1 Install the package using your preferred package manager
 Step 2 Create a configuration file for your project settings
 Step 3 Run the transpiler on your markdown files
@@ -41,7 +41,7 @@ Step 4 Review the generated React components and imports
 
 ### FAQ Accordion
 
-:::accordion
+::: accordion
 What is Fumadocs Transpiler?|A powerful tool that converts annotated Markdown files to Fumadocs-compatible React components with bidirectional conversion support.
 How do I install it?|Use npm install -g fumadocs-transpiler to install it globally, or npm install fumadocs-transpiler for local installation.
 Can I reverse the transpilation?|Yes! Use the --reverse flag to convert MDX files back to annotated Markdown format.
@@ -52,7 +52,7 @@ Is it open source?|Yes, it's available on GitHub under the MIT license with full
 
 ### JavaScript Example
 
-:::code-block lang="javascript" title="Basic Usage"
+::: code-block lang="javascript" title="Basic Usage"
 import { FumadocsTranspiler } from 'fumadocs-transpiler';
 
 const transpiler = await FumadocsTranspiler.create();
