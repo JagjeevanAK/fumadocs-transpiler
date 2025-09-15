@@ -15,6 +15,11 @@ This directory contains example files demonstrating the capabilities of the Fuma
 - **`sample-mdx-input.mdx`** - Comprehensive MDX file with all supported components
 - **`expected-reverse-output.md`** - Expected Markdown output after reverse transpilation
 
+### Code Block Enhancement Examples
+
+- **`code-block-example.md`** - Markdown file demonstrating code block title extraction
+- **`code-block-expected-output.mdx`** - Expected output showing enhanced code blocks
+
 ### Configuration
 
 - **`fumadocs-transpiler.config.json`** - Example configuration file
@@ -51,7 +56,22 @@ fumadocs-transpiler --input examples/sample-mdx-input.mdx --reverse --dry-run --
 fumadocs-transpiler --input examples/sample-mdx-input.mdx --reverse --verbose
 ```
 
-### 3. Round-Trip Testing
+### 3. Code Block Enhancement Testing
+
+Test the automatic code block title extraction:
+
+```bash
+# Transform markdown with code block enhancement
+fumadocs-transpiler --input examples/code-block-example.md --output examples/output --verbose
+
+# Preview code block enhancements
+fumadocs-transpiler --input examples/code-block-example.md --dry-run --verbose
+
+# Test reverse transformation of enhanced code blocks
+fumadocs-transpiler --input examples/code-block-expected-output.mdx --output examples/output --reverse --verbose
+```
+
+### 4. Round-Trip Testing
 
 Test bidirectional conversion:
 
@@ -66,7 +86,7 @@ fumadocs-transpiler --input examples/test-output/input.mdx --output examples/tes
 diff examples/input.md examples/test-output/input.md
 ```
 
-### 4. Using Configuration
+### 5. Using Configuration
 
 Test with the example configuration:
 
@@ -97,6 +117,11 @@ The examples showcase all supported component types:
 ### Banners
 - `:::banner` → `<Banner>` with type attribute
 
+### Code Block Enhancement
+- Regular ````bash` → ````bash title="Heading Title"`
+- Automatic title extraction from nearest `##` or `###` heading
+- Reverse: ````bash title="Title"` → ````bash` (title removed)
+
 ## Features Demonstrated
 
 ### Title Extraction
@@ -116,8 +141,15 @@ The examples showcase all supported component types:
 
 ### Content Preservation
 - Regular Markdown syntax remains unchanged
-- Code blocks, lists, tables, and links preserved
+- Code blocks enhanced with titles from headings
+- Lists, tables, and links preserved
 - Formatting and structure maintained
+
+### Code Block Enhancement
+- Automatic title extraction from `##` and `###` headings
+- Smart heading search (looks backwards, stops at `#`)
+- Preserves existing explicit titles
+- Bidirectional conversion support
 
 ## Testing Your Changes
 
@@ -128,6 +160,7 @@ If you modify the transpiler, use these examples to verify functionality:
 npm run build
 node dist/cli.js --input examples/input.md --dry-run --verbose
 node dist/cli.js --input examples/sample-mdx-input.mdx --reverse --dry-run --verbose
+node dist/cli.js --input examples/code-block-example.md --dry-run --verbose
 
 # Validate round-trip conversion
 node dist/cli.js --input examples/input.md --output /tmp/test-forward
@@ -138,6 +171,8 @@ diff examples/input.md /tmp/test-reverse/input.md
 ## Expected Behavior
 
 - **Forward transpilation** should match `expected-output.mdx`
+- **Code block enhancement** should match `code-block-expected-output.mdx`
 - **Reverse transpilation** should match `expected-reverse-output.md`
 - **Round-trip conversion** should preserve the original content structure
+- **Code block titles** should be added during forward and removed during reverse
 - **All regular Markdown** should remain unchanged in both directions

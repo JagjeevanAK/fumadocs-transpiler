@@ -13,6 +13,7 @@ A powerful Node.js transpiler that converts annotated Markdown files to Fuma-doc
 - **Built-in Components**: Support for callouts, tabs, steps, accordions, code blocks, files, and banners
 - **Custom Components**: Extensible configuration for custom component mappings
 - **Automatic Title Extraction**: Extracts titles from `# heading` and adds to frontmatter
+- **Smart Code Block Enhancement**: Automatically adds titles to code blocks from nearest headings
 - **Description Support**: Add custom descriptions to frontmatter via CLI flag
 - **Smart Frontmatter Generation**: Creates proper YAML frontmatter with title and description
 - **Reverse Transpilation**: Convert existing MDX files back to annotated Markdown
@@ -144,6 +145,80 @@ This is the content of your documentation...
 - **Both**: When both exist, both title and description are included
 - **Existing frontmatter**: Any existing frontmatter is preserved and merged
 
+## 💻 Smart Code Block Enhancement
+
+The transpiler automatically enhances regular markdown code blocks by adding titles extracted from the nearest heading above them.
+
+### How Code Block Enhancement Works
+
+When the transpiler encounters a regular markdown code block, it:
+
+1. **Finds the nearest heading** (`##` or `###`) above the code block
+2. **Extracts the heading text** as the title
+3. **Adds the title attribute** to the code block in markdown format
+
+### Code Block Enhancement Examples
+
+**Input Markdown:**
+```markdown
+## Installation Guide
+
+Here's how to install the package:
+
+```bash
+npm install fumadocs-transpiler
+yarn add fumadocs-transpiler
+```
+
+### JavaScript Usage
+
+Use it programmatically:
+
+```javascript
+import { FumadocsTranspiler } from 'fumadocs-transpiler';
+const transpiler = await FumadocsTranspiler.create();
+```
+```
+
+**Enhanced Output:**
+```markdown
+## Installation Guide
+
+Here's how to install the package:
+
+```bash title="Installation Guide"
+npm install fumadocs-transpiler
+yarn add fumadocs-transpiler
+```
+
+### JavaScript Usage
+
+Use it programmatically:
+
+```javascript title="JavaScript Usage"
+import { FumadocsTranspiler } from 'fumadocs-transpiler';
+const transpiler = await FumadocsTranspiler.create();
+```
+```
+
+### Code Block Enhancement Rules
+
+- **Heading Search**: Looks backwards from the code block to find the nearest `##` or `###` heading
+- **Scope Limitation**: Stops at `#` headings to avoid overly broad titles
+- **Existing Titles**: Preserves explicit titles if already present (e.g., ````bash title="Custom Title"`)
+- **Format Preservation**: Maintains standard markdown code block format with title attribute
+
+### Supported Languages
+
+The enhancement works with all programming languages:
+
+- **Shell/Bash**: ````bash title="Installation Guide"`
+- **JavaScript**: ````javascript title="API Usage"`
+- **TypeScript**: ````typescript title="Type Definitions"`
+- **JSON**: ````json title="Configuration"`
+- **Python**: ````python title="Example Script"`
+- **And many more**: Any language supported by markdown code blocks
+
 ## 🔄 Reverse Transpilation
 
 The transpiler supports bidirectional conversion, allowing you to convert existing Fumadocs MDX files back to annotated Markdown format.
@@ -161,8 +236,9 @@ The reverse transpiler automatically:
 
 1. **Converts components back to annotations**
 2. **Extracts title from frontmatter** and converts to `# heading`
-3. **Removes import statements**
-4. **Preserves regular Markdown content**
+3. **Removes code block title attributes** and restores plain markdown format
+4. **Removes import statements**
+5. **Preserves regular Markdown content**
 
 ### Reverse Conversion Examples
 
@@ -185,13 +261,15 @@ This is helpful information for users.
   <Tab value="yarn">yarn add package</Tab>
   <Tab value="pnpm">pnpm add package</Tab>
 </Tabs>
+
+```bash title="Installation Guide"
+npm install package
+```
 ```
 
 **Output Markdown:**
 ```markdown
 # Getting Started
-
-This is helpful information for users.
 
 :::callout-info
 This is helpful information for users.
@@ -202,6 +280,10 @@ npm|npm install package
 yarn|yarn add package
 pnpm|pnpm add package
 :::
+
+```bash
+npm install package
+```
 ```
 
 ### Reverse Transpilation Usage
@@ -578,6 +660,9 @@ fumadocs-transpiler --input ./docs --dry-run
 
 # Dry run with description to see frontmatter preview
 fumadocs-transpiler --input ./docs --description "Test description" --dry-run
+
+# Test code block enhancement
+fumadocs-transpiler --input examples/code-block-example.md --dry-run
 ```
 
 ### With Configuration

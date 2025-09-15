@@ -1,0 +1,123 @@
+# Code Block Enhancement Example
+
+This example demonstrates how the transpiler automatically enhances code blocks with titles from nearby headings.
+
+## Installation Instructions
+
+Follow these steps to install the package:
+
+```bash
+npm install fumadocs-transpiler
+# or
+yarn add fumadocs-transpiler
+```
+
+## Basic Usage
+
+Here's how to use the transpiler programmatically:
+
+```javascript
+import { FumadocsTranspiler } from 'fumadocs-transpiler';
+
+const transpiler = await FumadocsTranspiler.create();
+await transpiler.processFiles({
+  input: './docs',
+  output: './src/pages'
+});
+```
+
+### Configuration File
+
+Create a configuration file for custom settings:
+
+```json
+{
+  "componentMappings": {
+    "callout-info": "<Callout type=\"info\">{{content}}</Callout>",
+    "callout-warn": "<Callout type=\"warn\">{{content}}</Callout>"
+  },
+  "outputExtension": ".mdx",
+  "imports": [
+    "import { Callout } from 'fumadocs-ui/components/callout';"
+  ]
+}
+```
+
+## Advanced Features
+
+### TypeScript Support
+
+The transpiler includes full TypeScript definitions:
+
+```typescript
+interface TranspilerConfig {
+  componentMappings: Record<string, string>;
+  outputExtension: string;
+  imports: string[];
+}
+
+interface CliOptions {
+  input: string;
+  output?: string;
+  reverse?: boolean;
+}
+```
+
+### CLI Commands
+
+Use these commands for different operations:
+
+```bash
+# Forward transpilation
+fumadocs-transpiler --input ./docs --output ./src/pages
+
+# Reverse transpilation
+fumadocs-transpiler --input ./src/pages --output ./docs --reverse
+
+# Watch mode
+fumadocs-transpiler --input ./docs --watch
+```
+
+## Mixed Content
+
+Regular annotations still work alongside enhanced code blocks:
+
+:::callout-info
+This is an informational callout that will be converted to a React component.
+:::
+
+### Python Example
+
+Here's a Python script example:
+
+```python
+#!/usr/bin/env python3
+
+def process_markdown(content):
+    """Process markdown content with the transpiler."""
+    return transpiler.transform(content)
+
+if __name__ == "__main__":
+    process_markdown("# Hello World")
+```
+
+## Regular Markdown
+
+All regular Markdown features are preserved:
+
+- **Bold text**
+- _Italic text_
+- `Inline code`
+- [Links](https://example.com)
+
+### Lists and Tables
+
+1. Numbered lists work normally
+2. They are not affected by code block enhancement
+3. Only code blocks get title attributes
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Code Block Enhancement | ✅ | Automatic title extraction |
+| Annotations | ✅ | Full component support |
+| Reverse Transpilation | ✅ | Bidirectional conversion |
